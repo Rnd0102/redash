@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redash
+  namespace: airflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redash
+  template:
+    metadata:
+      labels:
+        app: redash
+    spec:
+      containers:
+        - args:
+            - server
+          env:
+            - name: REDASH_DATABASE_URL
+              value: postgres://[redash-user]:[redash-password]@[postgre-url]/[redash-db]
+            - name: REDASH_REDIS_URL
+              value: redis://[redis-url]:6379/0
+            - name: REDASH_COOKIE_SECRET
+              value: xxxxxxxxxxxxxxxxx
+            - name: REDASH_SECRET_KEY
+              value: xxxxxxxxxxxxxxxxx
+            - name: REDASH_MAIL_PASSWORD
+              value: xxxxxxxxxxxxxxxxx
+            - name: REDASH_MAIL_USERNAME
+              value: redash@example.com
+            - name: REDASH_MAIL_SERVER
+              value: my.smtp.com
+            - name: REDASH_MAIL_PORT
+              value: 587
+            - name: REDASH_MAIL_USE_SSL
+              value: true
+            - name: REDASH_MAIL_DEFAULT_SENDER
+              value: my.smtp.com
+            - name: REDASH_HOST
+              value: redash.example.com
+            - name: QUEUES
+              value: queries
+            - name: REDASH_WEB_WORKERS
+              value: '3'
+            - name: PYTHONUNBUFFERED
+              value: '0'
+          image: 'redash/redash:8.0.0.b32245'
+          imagePullPolicy: IfNotPresent
+          name: redash-server
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
